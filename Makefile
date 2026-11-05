@@ -1,6 +1,6 @@
-# ══════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════
 #  HT-LLM: Hierarchical Tree Language Model — Makefile
-# ══════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════
 
 CC       := gcc
 TARGET   := ht_llm
@@ -8,11 +8,16 @@ SRCS     := main.c arena.c context.c embedding.c micro_expert.c \
             model.c simd_math.c tokenizer.c tree.c train.c checkpoint.c
 OBJS     := $(SRCS:.c=.o)
 
-CFLAGS   := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -mavx2 -mfma
-LDFLAGS  := -lm
+# GCC auto-parallelizes loops it can prove independent. Override with:
+#   make clean all THREADS=8
+THREADS  ?= 4
+CFLAGS   := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -mavx2 -mfma \
+            -fopenmp -ftree-parallelize-loops=$(THREADS)
+LDFLAGS  := -lm -fopenmp
 
-# Debug: sembol bilgisi + AddressSanitizer, optimizasyon kapalı
-DEBUG_CFLAGS := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -g -O0 -fsanitize=address -fno-omit-frame-pointer
+# Debug: symbols + AddressSanitizer, optimization and auto-parallelization off
+DEBUG_CFLAGS := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -g -O0 \
+                -fsanitize=address -fno-omit-frame-pointer -fopenmp
 
 .PHONY: all debug run clean
 
