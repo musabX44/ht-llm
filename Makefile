@@ -8,8 +8,8 @@ SRCS     := main.c arena.c context.c embedding.c micro_expert.c \
             model.c simd_math.c tokenizer.c tree.c train.c checkpoint.c
 OBJS     := $(SRCS:.c=.o)
 
-# GCC auto-parallelizes loops it can prove independent. Override with:
-#   make clean all THREADS=8
+# GCC auto-parallelizes independent loops in training code. THREADS is the
+# compile-time ceiling; OMP_NUM_THREADS controls the runtime worker count.
 THREADS  ?= 4
 CFLAGS   := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O2 -mavx2 -mfma \
             -fopenmp -ftree-parallelize-loops=$(THREADS)
